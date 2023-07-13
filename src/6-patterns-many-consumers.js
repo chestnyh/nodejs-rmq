@@ -47,8 +47,9 @@ const queue = 'our_first_queue';
                 queue, 
                 (message) => {
                     console.log(`[Consumer ${i}] Received message: `, message.content.toString());
+                    // channel.ack(message);
                 }, 
-                {noAck: true}
+                //{noAck: false}
             );
         }
     } catch (err) {
