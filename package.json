@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/chestnyh/nodejs-rmq#readme",
   "dependencies": {
+    "amqplib": "^0.10.3",
     "dotenv": "^16.3.1"
   }
 }
