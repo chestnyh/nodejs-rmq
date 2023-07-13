@@ -1,17 +1,19 @@
+require('dotenv').config();
 const amqp = require('amqplib');
-const queue = 'our_first_queue';
+
+const HOST = process.env.HOST || 'amqp://localhost';
+const queue = 'many_consumers_queue';
 
 // publisher
 (async () => {
     let connection;
     try {
-      connection = await amqp.connect('amqp://localhost');
+      connection = await amqp.connect(HOST);
       const channel = await connection.createChannel();
       await channel.assertQueue(queue, { durable: false });
 
-      // ################
-
       setTimeout(() => {
+        // Ten messages sent
         for(let i = 0; i < 10; i++) {
             const text = `Message from producer No ${i}.`
             channel.sendToQueue(queue, Buffer.from(text));
@@ -19,24 +21,18 @@ const queue = 'our_first_queue';
           }
       }, 1000);
 
-      // ###############
     }
     catch (err) {
       console.warn(err);
     }
-    // finally {
-    //   if (connection) await connection.close();
-    // };
 })(); 
 
 // consumer
 (async () => {
     try {
         for (let i = 0; i < 5; i++){
-
             const connection = await amqp.connect('amqp://localhost');
             const channel = await connection.createChannel();
-  
             process.once('SIGINT', async () => { 
                 await channel.close();
                 await connection.close();
@@ -47,9 +43,9 @@ const queue = 'our_first_queue';
                 queue, 
                 (message) => {
                     console.log(`[Consumer ${i}] Received message: `, message.content.toString());
-                    // channel.ack(message);
+                    channel.ack(message);
                 }, 
-                //{noAck: false}
+                {noAck: false}
             );
         }
     } catch (err) {

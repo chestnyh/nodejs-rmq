@@ -1,11 +1,14 @@
+require('dotenv').config();
 const amqp = require('amqplib');
-const queue = 'our_first_queue';
+
+const HOST = process.env.HOST || 'amqp://localhost';
+const queue = 'simple_queue';
 
 // publisher
 (async () => {
     let connection;
     try {
-      connection = await amqp.connect('amqp://localhost');
+      connection = await amqp.connect(HOST);
       const channel = await connection.createChannel();
   
       await channel.assertQueue(queue, { durable: false });
@@ -38,7 +41,9 @@ const queue = 'our_first_queue';
       await channel.assertQueue(queue, { durable: false });
       await channel.consume(queue, (message) => {
         console.log("[Consumer] Received message: ", message.content.toString());
-      }, { noAck: true });
+      }, 
+      { noAck: true }
+      );
   
     } catch (err) {
       console.warn(err);

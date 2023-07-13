@@ -1,4 +1,7 @@
+require('dotenv').config();
 const amqp = require('amqplib');
+
+const HOST = process.env.HOST || 'amqp://localhost';
 const exchange = "ex.fan";
 
 function timeout(ms) {
@@ -7,10 +10,9 @@ function timeout(ms) {
 
 // publisher
 (async () => {
-
     let connection;
     try {
-      connection = await amqp.connect('amqp://localhost');
+      connection = await amqp.connect(HOST);
       const channel = await connection.createChannel();
   
       await channel.assertExchange(exchange, 'fanout');
@@ -32,7 +34,7 @@ function timeout(ms) {
     try {
         for(let i = 0; i < 3; i++){
 
-            const connection = await amqp.connect('amqp://localhost');
+            const connection = await amqp.connect(HOST);
             const channel = await connection.createChannel();
         
             process.once('SIGINT', async () => { 
@@ -46,7 +48,6 @@ function timeout(ms) {
             await channel.assertQueue(queue, { durable: false });
             await channel.bindQueue(queue, exchange);
         
-            
             await channel.consume(queue, (message) => {
                 console.log(`[Consumer] get message ${queue} : `, message.content.toString());
             }, 
